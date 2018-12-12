@@ -8,6 +8,11 @@ Created on Sun Dec  9 16:00:44 2018
 import time
 from pynput.keyboard import Key, Controller
 import numpy as np
+import cv2
+import pandas as pd
+import os
+
+
 globvar=True
 keyboard = Controller()
 def on_release(key):
@@ -93,9 +98,31 @@ def rotated(df):
     df.columns=cols
     return(df )
     
-#    
-#def mvline(a):
-# 
+
+def getM(sgd_clf ,ts=4, save=False):
+    M=pd.DataFrame(columns=np.arange(4), index=np.arange(4))
+    time.sleep(ts)
+    for i in range(4):
+        for j in range(4):
+            test=scrn(i,j)
+            pr=cv2.imread(test,0) 
+            if (~save):
+                os.remove(test)
+            pr=sgd_clf.predict(pr.reshape(1,-1) )[0]
+            if pr=='np.nan':
+                M.iloc[i,j]=np.nan
+            else:
+                M.iloc[i,j]=int(pr)
+    return(M)
+
+
+
+
+
+
+
+
+
 
 
 def justify(a, invalid_val=0, axis=1, side='left'):    

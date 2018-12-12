@@ -33,24 +33,39 @@ sgd_clf.fit(ar, Y)
 
 import time
 
-cols=['0','1','2','3']
-
-M=pd.DataFrame(columns=np.arange(4), index=np.arange(4))
-time.sleep(4)
-for i in range(4):
-    for j in range(4):
-        test=f.scrn(i,j)
-        
-        pr=cv2.imread(test,0) 
-        os.remove(test)
-        pr=sgd_clf.predict(pr.reshape(1,-1) )[0]
-        if pr=='np.nan':
-            M.iloc[i,j]=np.nan
-        else:
-            M.iloc[i,j]=int(pr)
 
 
 
+
+
+M=f.getM(sgd_clf)
+M.copy(deep=True)
+
+
+time.sleep(5)
+while True:
+    time.sleep(1)
+    k=Key.left
+    s=0
+    for key in [Key.down, Key.up, Key.left]:
+        if s>np.nanprod(f.nextt(M, key).values):
+            k=key
+    f.mv(k, 1)
+    M=f.getM(sgd_clf, 0.5)
+    M.copy(deep=True)
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 with Listener(
         on_press=f.on_press,
