@@ -99,14 +99,14 @@ def rotated(df):
     return(df )
     
 
-def getM(sgd_clf ,ts=4, save=False):
+def getM(sgd_clf ,ts=4, rmv=True):
     M=pd.DataFrame(columns=np.arange(4), index=np.arange(4))
     time.sleep(ts)
     for i in range(4):
         for j in range(4):
             test=scrn(i,j)
             pr=cv2.imread(test,0) 
-            if (~save):
+            if rmv:
                 os.remove(test)
             pr=sgd_clf.predict(pr.reshape(1,-1) )[0]
             if pr=='np.nan':

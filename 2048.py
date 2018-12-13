@@ -41,25 +41,17 @@ import time
 M=f.getM(sgd_clf)
 M.copy(deep=True)
 
-
-time.sleep(5)
 while True:
     time.sleep(1)
-    k=Key.left
-    s=0
-    for key in [Key.down, Key.up, Key.left]:
+    k=Key.up
+    s=2**100
+    for key in [Key.right, Key.down, Key.up, Key.left]:
         if s>np.nanprod(f.nextt(M, key).values):
+            s=np.nanprod(f.nextt(M, key).values)
             k=key
     f.mv(k, 1)
     M=f.getM(sgd_clf, 0.5)
     M.copy(deep=True)
-
-
-    
-    
-    
-    
-    
     
     
     
