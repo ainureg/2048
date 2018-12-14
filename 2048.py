@@ -22,6 +22,7 @@ for (dirpath, dirnames, filenames) in os.walk('./data'):
 ar=[]
 Y=[]
 for fl in flist:
+    #print(fl)
     temp=cv2.imread(fl,0).reshape(11449,)
     ar.append(temp)
     Y.append(re.search( '/.*/(.*)/', fl).group(1) )
@@ -31,29 +32,34 @@ from sklearn.linear_model import SGDClassifier
 sgd_clf = SGDClassifier(max_iter=500)
 sgd_clf.fit(ar, Y)
 
-import time
-
+#import time
 
 
 
 
 
 M=f.getM(sgd_clf)
-M.copy(deep=True)
+#tempM=M.copy(deep=True)
+
 
 while True:
-    time.sleep(1)
-    k=Key.up
     s=2**100
     for key in [Key.right, Key.down, Key.up, Key.left]:
-        if s>np.nanprod(f.nextt(M, key).values):
-            s=np.nanprod(f.nextt(M, key).values)
+        tempM=M.copy(deep=True)
+        tempM=f.nt(tempM,key)
+#        print(tempM)
+        print(s,np.nanprod(tempM.values) ,f.nancount(tempM), f.nancount(M),np.nanprod(tempM.values) ,(not tempM.equals(M) ) )
+        print(( (   (f.nancount(tempM) <= f.nancount(M) ) &\
+            (s>=np.nanprod(tempM.values) )  )  & (not tempM.equals(M) ) ))
+        if ((  ( f.nancount(tempM) <= f.nancount(M) ) &\
+            (s>=np.nanprod(tempM.values) )  )  & (not tempM.equals(M) ) ):
+            s=np.nanprod(tempM.values)
             k=key
-    f.mv(k, 1)
-    M=f.getM(sgd_clf, 0.5)
-    M.copy(deep=True)
+    print(k)
+    f.mv(k, 0.2)
+    M=f.getM(sgd_clf, 0.001)
     
-    
+
     
     
     

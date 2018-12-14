@@ -12,7 +12,6 @@ import cv2
 import pandas as pd
 import os
 
-
 globvar=True
 keyboard = Controller()
 def on_release(key):
@@ -41,7 +40,8 @@ def mv(k,tm=0.01):
     time.sleep(tm)
     return(0)
     
-    
+
+
 from datetime import datetime
 import mss.tools
 import mss
@@ -58,10 +58,10 @@ def scrn (n,m,l1=107,l2=15):
         
         # Save to the picture file
         mss.tools.to_png(sct_img.rgb, sct_img.size, output=out)
-        print(out)
+#        print(out)
         return(out)
 
-def nextt (m, key):
+def nt (m, key):
     if key==Key.down:
         m=rotated(m)
     elif key==Key.right:
@@ -76,10 +76,10 @@ def nextt (m, key):
             while j <(len(temp)-1) :
 #                print(i,j, temp)
                 if temp[j]==temp[j+1]:
-                    temp=np.concatenate( (temp[0:j],2*temp[j],temp[(j+2):] ), axis=None)
+                    temp=np.concatenate( (temp[0:j],float(2*temp[j]),temp[(j+2):] ), axis=None)
                 j=j+1
                     
-        temp=np.asarray(temp)
+        temp=np.asarray(temp).astype(float)
         m.loc[i,:]=np.full(4,np.nan)
         m.loc[i,:(len(temp)-1)]=temp
         
@@ -99,23 +99,29 @@ def rotated(df):
     return(df )
     
 
-def getM(sgd_clf ,ts=4, rmv=True):
+def getM(sgd_clf ,ts=4, save=False):
     M=pd.DataFrame(columns=np.arange(4), index=np.arange(4))
     time.sleep(ts)
     for i in range(4):
         for j in range(4):
             test=scrn(i,j)
             pr=cv2.imread(test,0) 
-            if rmv:
+            if not save:
                 os.remove(test)
             pr=sgd_clf.predict(pr.reshape(1,-1) )[0]
             if pr=='np.nan':
                 M.iloc[i,j]=np.nan
             else:
-                M.iloc[i,j]=int(pr)
+                M.iloc[i,j]=float(pr)
+    M=M.astype(float)
     return(M)
 
 
+
+
+from functools import reduce
+def nancount(M):
+    return(np.count_nonzero(~np.isnan(reduce(lambda a, x: a + x, (M.values).tolist()))))
 
 
 
