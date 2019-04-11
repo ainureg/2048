@@ -28,7 +28,6 @@ except ImportError:
 
 
 class tbl():
-    
     def fit(self,flist):
         ar=[]
         Y=[]
@@ -59,19 +58,34 @@ class tbl():
         
         
     def gettbl(self,ts=4, save=False):
+        import mss.tools
+        import mss
+        from datetime import datetime
         self.tbl=DataFrame(columns=np.arange(4), index=np.arange(4))
         sleep(ts)
-        for i in range(4):
-            for j in range(4):
-                test=scrn(i,j)
-                pr=cv2.imread(test,0) 
-                if not save:
-                    os.remove(test)
-                pr=self.sgd.predict(pr.reshape(1,-1) )[0]
-                if pr=='np.nan':
-                    self.tbl.iloc[i,j]=np.nan
-                else:
-                    self.tbl.iloc[i,j]=float(pr)
+        l1=107
+        l2=15
+        top=335
+#        left=556
+        left=381
+        with mss.mss() as sct:
+            for i in range(4):
+                for j in range(4):
+                    monitor = {"top": top+l2+i*(l1+l2), "left": left+l2+j*(l1+l2), \
+                   "width": l1, "height": l1}
+                    test = str(i)+'*'+str(j)+str(datetime.now().time())+".png".format(**monitor)
+                    # Grab the data
+                    sct_img = sct.grab(monitor)
+                    # Save to the picture file
+                    mss.tools.to_png(sct_img.rgb, sct_img.size, output=test)
+                    pr=cv2.imread(test,0) 
+                    if not save:
+                        os.remove(test)
+                    pr=self.sgd.predict(pr.reshape(1,-1) )[0]
+                    if pr=='np.nan':
+                        self.tbl.iloc[i,j]=np.nan
+                    else:
+                        self.tbl.iloc[i,j]=float(pr)
         self.tbl=self.tbl.astype(float)
         
         
@@ -99,7 +113,7 @@ class score():
     def predict(self, score='', maxlength=15,  sleep=5):
         if score=='':
             score=getscore(sleep=sleep)
-        
+        #вроде работает, но надо поправить
         color=[187, 173, 160]
         colorcol=np.array([[color]*19]).astype('uint8')
         ld=getld(score)
