@@ -63,18 +63,13 @@ def on_release(key):
     
 def on_press(key):
     global t
-#    global globvar
- #   sleep(1)
+    global globvar
     if key == Key.enter:
-            with Listener(
-            on_release=on_release) as listener:
-                print('still running...')
-        
-                while globvar:
-                    k=gotmove(t.tbl)
-                    mv(k, 0)
-                    t.gettbl(ts=0)
-                    print(k,'\n___________________\n')
+#        while globvar:
+        k=gotmove(t.tbl)
+        mv(k, 0)
+        t.gettbl(ts=0)
+        print(k,'\n___________________\n')
 #    if key == Key.esc:
 #        return False      
     
@@ -99,12 +94,9 @@ if __name__ == "__main__":
             on_release=on_release) as listener:
         print('still running...')
         while globvar:
-            #print('still running...')
             sleep(0.1)
             if not listener.running:
                 break
-        
-    #    listener.join()
         
 
 
