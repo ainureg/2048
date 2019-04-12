@@ -24,10 +24,10 @@ class tbl():
             
         sgd_clf = SGDClassifier(max_iter=500)
         self.sgd=sgd_clf.fit(ar, Y)
-    def save(self, fname='sgd.joblib'):
+    def save(self, fname='./.conf/sgd.joblib'):
         dump(self.sgd, fname) 
         
-    def load(self, fname='sgd.joblib'):
+    def load(self, fname='./.conf/sgd.joblib'):
         self.sgd=load(fname) 
         
     def predict(self, x):
@@ -40,8 +40,7 @@ class tbl():
             test = sct.shot(output='fullscreen.png')
         pr=cv2.imread(test,0) 
         os.remove(test)
-        
-        
+    
     def gettbl(self,ts=4, save=False):
         self.tbl=DataFrame(columns=np.arange(4), index=np.arange(4))
         sleep(ts)
@@ -72,7 +71,7 @@ class tbl():
                         img = str(i)+'*'+str(j)+str(datetime.now().time())+".png".format(**monitor)
                         sct_img = sct.grab(monitor)
                         msstools.to_png(sct_img.rgb, sct_img.size, output=img)
-                        pr=imread(img,0) 
+                        #pr=imread(img,0) 
         self.tbl=self.tbl.astype(float)
         
         
@@ -90,10 +89,10 @@ class score():
             
         sgd_clf = SGDClassifier(max_iter=500)
         self.sgd=sgd_clf.fit(ar, Y)
-    def save(self, fname='score.joblib'):
+    def save(self, fname='./.conf/score.joblib'):
         dump(self.sgd, fname) 
         
-    def load(self, fname='score.joblib'):
+    def load(self, fname='./.conf/score.joblib'):
         self.sgd=load(fname) 
         
     def predict(self, score='', maxlength=15,  sleep=5):
@@ -138,18 +137,33 @@ class score():
                     self.tbl.iloc[i,j]=float(pr)
         self.tbl=self.tbl.astype(float)
     
+    def capture(self, fname=''):
+        #pright=910
+        pright=710
+        ptop=185
+        pwidth=100
+        pheight=19
+        with mss() as sct:
     
-    
-    
-    
+#    def getscore(sleep=5,pright=pright,ptop=ptop,pwidth=pwidth,pheight=pheight):    
+#        time.sleep(sleep)
+#        with mss.mss() as sct:
+            # The screen part to capture
+            monitor = {"top": ptop, "left": pright-pwidth, "width": pwidth, "height": pheight}
+            if fname=='':
+                fname = "temp/"+str(datetime.now().time()).format(**monitor)
+        
+            # Grab the data
+            sct_img = sct.grab(monitor)
+        
+            # Save to the picture file
+            mss.tools.to_png(sct_img.rgb, sct_img.size, output=fname)
+        return(fname)
     
     
 class state():
-    
     def __init__(self):
         self.load()
-        
-        
         
     def fit(self,flist):
         ar=[]
@@ -168,7 +182,24 @@ class state():
     def load(self, fname='./.conf/state.joblib'):
         self.sgd=load(fname) 
         
-    def predict(self):
+#    def capture(self,fname=''):
+#        with mss() as sct:
+#            l1, l2=107, 15
+#            top, left=335,381
+#            monitor = {"top": top, "left": left, \
+#                       "width": 4*l1+5*l2, "height": 4*l1+5*l2}
+#            if fname=='':
+#                fname = str(datetime.now().time())+".png".format(**monitor)
+#            sct_img = sct.grab(monitor)
+#            msstools.to_png(sct_img.rgb, sct_img.size, output=fname)
+#            return(fname)
+        
+    def predict_on_img(self, fname):
+        sc=imread(fname,0)
+        return (self.sgd.predict(sc.reshape(1,-1))[0] )
+        
+        
+    def predict(self, save=False):
         with mss() as sct:
             l1,l2 =107, 15
             top, left =335, 381
@@ -176,8 +207,13 @@ class state():
                        "width": 4*l1+5*l2, "height": 4*l1+5*l2}
             
             #n=split(np.array(sct.grab(monitor)) )[0]
-            sc = np.array(sct.grab(monitor))
+            sc=sct.grab(monitor)
+            if save:
+                msstools.to_png(sc.rgb, sc.size,
+                        output=str(datetime.now().time())+".png".format(**monitor))
+            sc = np.array(sc)
             sc=cv2.cvtColor( sc, cv2.COLOR_BGR2GRAY)
-            self.now=self.sgd.predict(sc.reshape(1,-1))
+            self.now=self.sgd.predict(sc.reshape(1,-1))[0]
+            return(self.now)
           
-        
+            

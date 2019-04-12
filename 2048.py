@@ -2,8 +2,7 @@ from pynput.keyboard import Listener, Key, Controller
 import os
 from time import sleep
 from functions import mv, mem#,gotmove 
-from classes import tbl
-from classes import score
+from classes2048 import state, score, tbl
 
 from mss import mss
 import mss.tools as msstools
@@ -43,12 +42,12 @@ def on_press(key):
                 monitor = {"top": top, "left": left, \
 "width": 4*l1+5*l2, "height": 4*l1+5*l2}
                 
-                img = str(datetime.now().time())+".png".format(**monitor)
+                img = './data/gamestate/lost/'+str(datetime.now().time())+".png".format(**monitor)
                 sct_img = sct.grab(monitor)
-                msstools.to_png(sct_img.rgb, sct_img.size, output='./data/gamestate/lost/'+img)
+                msstools.to_png(sct_img.rgb, sct_img.size, output=img)
                 keyboard.press(Key.f5)
                 keyboard.release(Key.f5)
-                print('АХАХАХХ проиграли')
+                print('Проигрыш'+ str( datetime.now().time() ) +'\n________________')
                 sleep(10)
                 t.gettbl(ts=0)
                 on_press(Key.enter)
