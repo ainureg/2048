@@ -15,11 +15,11 @@ from datetime import datetime
 class tbl():
     def __init__(self):
         self.load()
+        
     def fit(self,folder='./data/numbers'):
         flist=getflist()
         self.sgd=getfit(flist, max_iter=1000)
         
-
     def save(self, fname='./.conf/sgd.joblib'):
         dump(self.sgd, fname) 
         
@@ -75,22 +75,6 @@ class tbl():
                         #pr=imread(img,0) 
         self.tbl=self.tbl.astype(float)
         return (self.tbl)
-    
-#    def check(self):
-#            if (self.tbl.sum().sum()-self.prev.sum().sum() ) not in [0,2,4]:
-#                print('wrong gettbl')
-#                folder='./temp/'+str(datetime.now())+'/'
-#                os.mkdir(folder)
-#                self.gettbl(save=True, folder=folder)
-#                self.prev.to_csv(folder+'prev', header='None', index='None', sep='\t')  
-#                self.tbl.to_csv(folder+'tbl', header='None', index='None', sep='\t')  
-#                #game.predict(save=True,folder=folder)
-#                return (False)
-#            return(True)
-            
-            
-            
-        
         
 class score():
     def fit(self,folder='./data/score'):
@@ -171,10 +155,8 @@ class score():
     
     
 class state():
-    
-#    flist=getflist('./data/gamestate/')
-#    game.fit(flist)
-#    game.save()
+    def __init__(self):
+        self.load()
     
     def fit(self,folder='./data/gamestate'):
         flist=getflist()
@@ -201,7 +183,6 @@ class state():
     def predict_on_img(self, fname):
         sc=imread(fname,0)
         return (self.sgd.predict(sc.reshape(1,-1))[0] )
-        
         
     def predict(self, save=False,folder='./'):
         with mss() as sct:
