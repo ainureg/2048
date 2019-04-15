@@ -8,11 +8,14 @@ Created on Sun Dec  9 16:00:44 2018
 import time
 from pynput.keyboard import Key, Controller
 import numpy as np
-import cv2
 import os
 import re
 from pandas import DataFrame
 
+
+from datetime import datetime
+import mss.tools
+import mss
 
 try:
     from PIL import Image
@@ -38,7 +41,8 @@ def getfit(flist, max_iter=500):
     ar=[]
     Y=[]
     for fl in flist:
-        temp=cv2.imread(fl,0).reshape(-1,)
+        temp=np.array(Image.open(fl).convert('L')).reshape(-1,)
+#        temp=cv2.imread(fl,0).reshape(-1,)
         ar.append(temp)
 #        re.search( '/(.*)/', fl).group(1) if fl doesnt start with ./
         Y.append(re.search( '/.*/(.*)/', fl).group(1) )
@@ -84,16 +88,14 @@ def mv(k):
     keyboard.release(k)
     return(True)
     
-from datetime import datetime
-import mss.tools
-import mss
+
 
 def scrn (n,m,l1=107,l2=15,top=335, left=556):
     with mss.mss() as sct:
         # The screen part to capture
 #        monitor = {"top": 335+l2+n*(l1+l2), "left": 581+l2+m*(l1+l2), \
 #                   "width": l1, "height": l1}
-        monitor = {"top": 335+l2+n*(l1+l2), "left": 381+l2+m*(l1+l2), \
+        monitor = {"top": 335+l2+n*(l1+l2), "left": 581+l2+m*(l1+l2), \
                    "width": l1, "height": l1}
         
         out = str(n)+'*'+str(m)+str(datetime.now().time())+".png".format(**monitor)

@@ -2,7 +2,7 @@ from pynput.keyboard import Listener, Key, Controller
 import os
 from time import sleep
 from functions import mv, getkey#,gotmove 
-from classes2048 import state, score, tbl
+from classes2048 import state, tbl# score, 
 
 #from mss import mss
 #import mss.tools as msstools
@@ -24,7 +24,6 @@ def on_press(key):
     ts=0.22
     t.gettbl(ts=ts)
     if key == Key.enter:
-        
         while game.predict()=='going':
             k=getkey(t.tbl)
             mv(k)
@@ -45,17 +44,17 @@ def on_press(key):
                 sleep(3)
                 #print(k,'\n___________________\n')
             
-        if (game.now!='going'):
-            #temp=int(input('\ninput for pause'))
-            sleep(1)
+#        if (game.now!='going'):
+#            temp=int(input('\ninput for pause'))
+#            sleep(1)
             
-            folder='./temp/'+str(datetime.now())+'/'
-            os.mkdir(folder)
-            t.gettbl(save=True, folder=folder)
-            t.prev.to_csv(folder+'prev', header='None', index='None', sep='\t')  
-            t.tbl.to_csv(folder+'tbl', header='None', index='None', sep='\t')  
-            game.predict(save=True, folder=folder)
-            print('Проигрыш тут'+ folder +'\n________________')           
+        folder='./temp/'+str(datetime.now())+'/'
+        os.mkdir(folder)
+        t.gettbl(save=True, folder=folder)
+        t.prev.to_csv(folder+'prev', header='None', index='None', sep='\t')  
+        t.tbl.to_csv(folder+'tbl', header='None', index='None', sep='\t')  
+        game.predict(save=True, folder=folder)
+        print('Проигрыш тут'+ folder +'\n________________')           
 #            with mss() as sct:
 #                sleep(3)
 #                l1,l2 =107, 15
@@ -65,16 +64,16 @@ def on_press(key):
 #                img = './temp/'+str(datetime.now())+".png".format(**monitor)
 #                sct_img = sct.grab(monitor)
 #                msstools.to_png(sct_img.rgb, sct_img.size, output=img)
-            keyboard.press(Key.f5)
-            sleep(0.05)
-            keyboard.release(Key.f5)
-            sleep(2)
+        keyboard.press(Key.f5)
+        sleep(0.05)
+        keyboard.release(Key.f5)
+        sleep(2)
 
         on_press(Key.enter)
     return True
 
 if __name__ == "__main__":
-    os.chdir('/home/ainur/Desktop/Codes/Python/problems/2048/')
+    os.chdir('/home/ainur/git/2048/')
 #    sc=score()
 #    sc.load()
     t=tbl()
