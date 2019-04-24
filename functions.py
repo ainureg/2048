@@ -42,7 +42,6 @@ def getfit(flist, max_iter=500):
     Y=[]
     for fl in flist:
         temp=np.array(Image.open(fl).convert('L')).reshape(-1,)
-#        temp=cv2.imread(fl,0).reshape(-1,)
         ar.append(temp)
 #        re.search( '/(.*)/', fl).group(1) if fl doesnt start with ./
         Y.append(re.search( '/.*/(.*)/', fl).group(1) )
@@ -63,9 +62,7 @@ def getkey(M):
         if (not temp2.equals(M) ):
             temp2=temp2.apply(np.log2)
             temp2=temp2.sum().sum()
-#            print(temp2)
             for k2 in keys:
-    #            temp=M.copy(deep=True)
                 temp=nt(nt(temp,k1),k2)
                 temp=temp.apply(np.log2)
                 stemp=temp.sum().sum()
@@ -90,12 +87,10 @@ def mv(k):
     
 
 
-def scrn (n,m,l1=107,l2=15,top=335, left=556):
+def scrn (n,m,l1=107,l2=15,top=335, left=581):
     with mss.mss() as sct:
         # The screen part to capture
-#        monitor = {"top": 335+l2+n*(l1+l2), "left": 581+l2+m*(l1+l2), \
-#                   "width": l1, "height": l1}
-        monitor = {"top": 335+l2+n*(l1+l2), "left": 581+l2+m*(l1+l2), \
+        monitor = {"top": top+l2+n*(l1+l2), "left": left+l2+m*(l1+l2), \
                    "width": l1, "height": l1}
         
         out = str(n)+'*'+str(m)+str(datetime.now().time())+".png".format(**monitor)
@@ -103,7 +98,6 @@ def scrn (n,m,l1=107,l2=15,top=335, left=556):
         sct_img = sct.grab(monitor)
         # Save to the picture file
         mss.tools.to_png(sct_img.rgb, sct_img.size, output=out)
-#        print(out)
         return(out)
         
 #next predicting
@@ -155,16 +149,26 @@ def getpredict(sgd_clf_score,score='', maxlength=15,  sleep=5):
     for j in ld:
         temp=np.concatenate( (j, np.repeat( [colorcol], maxlength-len(j) , axis=1)[0]))   
         temp=np.reshape(arflat(temp), [-1,maxlength,3], order='F')
-        Image.fromarray(temp).convert("RGB").save('temp.png')
-        temp=cv2.imread('temp.png',0)
+#        Image.fromarray(temp).convert("RGB").save('temp.png')
+#        temp=cv2.imread('temp.png',0)
+        
+        temp=np.array(Image.fromarray(temp).convert("L"))
+
+        
         score=score+(sgd_clf_score.predict(temp.reshape(1,-1))[0])
         os.remove('temp.png')
     return(score)
 
-pright=710
+#pright=710
+#ptop=185
+#pwidth=100
+#pheight=19
+    
+    
+pright=910
 ptop=185
 pwidth=100
-pheight=19
+pheight=19    
 
 def getscore(sleep=5,pright=pright,ptop=ptop,pwidth=pwidth,pheight=pheight):    
     time.sleep(sleep)
@@ -183,7 +187,6 @@ def getscore(sleep=5,pright=pright,ptop=ptop,pwidth=pwidth,pheight=pheight):
     
 #if the column consist of one color
 def monocol(col):
-#    l=len(col)
     for i in col:
         for j in range(3):
             if i[j]!=col[0][j]:
@@ -196,14 +199,9 @@ def arflat(temp):
     temp= list(chain(*temp))
     return(temp)
 
-pright=910
-ptop=185
-pwidth=100
-pheight=19
 def getld(file, pheight=pheight):
     img = Image.open(file)
     arr = np.array(img)
-#    temp=np.reshape(arflat(arr), [-1,pheight,3], order='F')
     temp=np.reshape(arflat(arr), [-1,len(arr),3], order='F')
 
     digits=0
