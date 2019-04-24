@@ -1,3 +1,3 @@
 # 2048
 
-trying to apply some ideas
+trying to implenemt some ideas
