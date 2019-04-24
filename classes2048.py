@@ -3,7 +3,7 @@ import numpy as np
 from joblib import dump, load
 from time import sleep
 from pandas import DataFrame
-from functions import scrn, getscore, getld, getflist, getfit, getGamePixels
+from functions import getscore, getld, getflist, getfit, getGamePixels
 import os
 import mss
 import mss.tools
@@ -24,7 +24,7 @@ class state():
         shelf.close()
 
     def fit(self,folder='./data/gamestate'):
-        flist=getflist()
+        flist=getflist(folder)
         self.stateSgd=getfit(flist, max_iter=600)
         
     def save(self, fname='./.conf/state.joblib'):
@@ -40,15 +40,25 @@ class state():
         
     def statepredict(self, save=False,folder='./'):
         with mss.mss() as sct:
-            l1,l2 =107, 15
-            top, left =335, 581
-            monitor = {"top": top, "left": left, \
-                       "width": 4*l1+5*l2, "height": 4*l1+5*l2}
+            # l1,l2 =107, 15
+            # top, left =335, 581
+            # monitor = {"top": top, "left": left, \
+            #            "width": 4*l1+5*l2, "height": 4*l1+5*l2}
             
             # l1,l2 =107, 16
             # top, left =game.props['top']['l1']['starts']-l2, 581
-            # monitor = {"top": top, "left": left, \
-            #            "width": 4*l1+5*l2, "height": 4*l1+5*l2}
+            
+            s=0
+            for i in range(3):
+                s=s+self.props['top']['l'+str(i+1)]['starts']-self.props['top']['l'+str(i)]['ends']
+                s=s+self.props['left']['l'+str(i+1)]['starts']-self.props['left']['l'+str(i)]['ends']
+            dif=int(round (s/6))
+            monitor = {"top": self.props['top']['l0']['starts']-dif, 
+                       "left": self.props['left']['l0']['starts']-dif, 
+                       "width": self.props['left']['l3']['ends']-\
+                       self.props['left']['l0']['starts']+2*dif,
+                       "height": self.props['top']['l3']['ends']-\
+                       self.props['top']['l0']['starts'] +2*dif}
             
             
             
@@ -56,12 +66,15 @@ class state():
             if save:
                 mss.tools.to_png(sct_img.rgb, sct_img.size,
                     output=folder+str(datetime.now())+".png".format(**monitor))
-            sc=np.array(Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX").convert('L') )
+            sc=Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX").convert('L') 
+            sc=np.array(sc.resize( (500,500) ) )
+            #sc=np.array(Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX").convert('L') )
 
             self.now=self.stateSgd.predict(sc.reshape(1,-1))[0]
             return(self.now)
             
     def getprops(self, save=False):
+        #some notes of using this
         import random
         from pynput.keyboard import Listener, Key
         keys= [Key.right,Key.down,Key.up,Key.left,]
@@ -178,10 +191,10 @@ class tbl(state):
         with mss.mss() as sct:
             for i in range(4):
                 for j in range(4):
-                    monitor = {"top": self.props['top']['l'+str(i+1)]['starts'], 
+                    monitor = {"top": self.props['top']['l'+str(i)]['starts'], 
                                 "left": self.props['left']['l'+str(j)]['starts'], 
                                 "width": self.props['left']['l'+str(j)]['ends'] - self.props['left']['l'+str(j)]['starts'] ,
-                                "height": self.props['top']['l'+str(i+1)]['ends'] - self.props['top']['l'+str(i+1)]['starts']}
+                                "height": self.props['top']['l'+str(i)]['ends'] - self.props['top']['l'+str(i)]['starts']}
                     
                    #  monitor = {"top": top+l2+i*(l1+l2), "left": left+l2+j*(l1+l2), \
                    # "width": l1, "height": l1}
@@ -226,9 +239,9 @@ class score():
         score=''
         for j in ld:
             temp=np.concatenate( (j, np.repeat( [colorcol], maxlength-len(j) , axis=1)[0]))   
-            temp=np.reshape(f.arflat(temp), [-1,maxlength,3], order='F')
+      #      temp=np.reshape(f.arflat(temp), [-1,maxlength,3], order='F')
             Image.fromarray(temp).convert("RGB").save('temp.png')
-            temp=imread('temp.png',0)
+    #        temp=imread('temp.png',0)
             score=score+(self.sgd.predict(temp.reshape(1,-1))[0])
             os.remove('temp.png')
         self.score=score
@@ -238,7 +251,7 @@ class score():
         with mss.mss() as sct:
             sleep(3)
             test = sct.shot(output='fullscreen.png')
-        pr=cv2.imread(test,0) 
+     #   pr=cv2.imread(test,0) 
         os.remove(test)
         
         
@@ -247,7 +260,7 @@ class score():
         sleep(ts)
         for i in range(4):
             for j in range(4):
-                scr=scrn(i,j)
+                scr=sum([i,j])
                 pr=Image.open(scr).convert('L')
                 
                 #pr=imread(scr,0) 

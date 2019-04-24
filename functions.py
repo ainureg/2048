@@ -85,21 +85,7 @@ def mv(k):
     keyboard.release(k)
     return(True)
     
-
-
-def scrn (n,m,l1=107,l2=15,top=335, left=581):
-    with mss.mss() as sct:
-        # The screen part to capture
-        monitor = {"top": top+l2+n*(l1+l2), "left": left+l2+m*(l1+l2), \
-                   "width": l1, "height": l1}
-        
-        out = str(n)+'*'+str(m)+str(datetime.now().time())+".png".format(**monitor)
-        # Grab the data
-        sct_img = sct.grab(monitor)
-        # Save to the picture file
-        mss.tools.to_png(sct_img.rgb, sct_img.size, output=out)
-        return(out)
-        
+ 
 #next predicting
 def nt (m, key):
     if key==Key.down:
@@ -238,9 +224,10 @@ def getGamePixels(imgsarray):
         n=len(t[t>1])
         # if n==4:
 
-        if ( (n==4) & (len(imgsarray[0]==1050) ) ) :
-            break
-        if ( (n==3) & (len(imgsarray[0]==1680) ) ) :
+        # if ( (n==4) & (len(imgsarray[0]==1050) ) ) :
+        #     break
+        # if ( (n==3) & (len(imgsarray[0]==1680) ) ) :
+        if n==3:
             break
     if i==1:
         print('Not enought')
