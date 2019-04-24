@@ -63,13 +63,17 @@ class state():
             
             
             sct_img=sct.grab(monitor)
+            
             if save:
-                mss.tools.to_png(sct_img.rgb, sct_img.size,
-                    output=folder+str(datetime.now())+".png".format(**monitor))
+                img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+                img=img.resize( (500,500) )
+                output=folder+str(datetime.now())+".png".format(**monitor)
+                img.save(output)
+                # mss.tools.to_png(sct_img.rgb, sct_img.size,
+                #     )
             sc=Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX").convert('L') 
             sc=np.array(sc.resize( (500,500) ) )
-            #sc=np.array(Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX").convert('L') )
-
+            
             self.now=self.stateSgd.predict(sc.reshape(1,-1))[0]
             return(self.now)
             
@@ -202,8 +206,13 @@ class tbl(state):
                     
                     sct_img=sct.grab(monitor)
                     if save:
-                        img = folder+str(i)+'*'+str(j)+str(datetime.now())+".png".format(**monitor)
-                        mss.tools.to_png(sct_img.rgb, sct_img.size, output=img)
+                        img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+                        img=img.resize( (107,107) )
+                        output=folder+str(datetime.now())+".png".format(**monitor)
+                        img.save(output)
+
+                    #     img = folder+str(i)+'*'+str(j)+str(datetime.now())+".png".format(**monitor)
+                    #     mss.tools.to_png(sct_img.rgb, sct_img.size, output=img)
                     n=Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX").convert('L')
                     n=n.resize( (107,107) )
                     n=np.array(n)
