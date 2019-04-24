@@ -221,9 +221,32 @@ def getld(file, pheight=pheight):
     del ld[digits]
     return(ld)
 
+def getGamePixels(imgsarray):
+    #различающиеся пиксели столбиков\строк в последовательных скринах
+    ty=[np.nonzero(imgsarray[i+1]-imgsarray[i])[0] for i in range(len(imgsarray)-1) ]
+    #самые частые пиксели
+    unique_elements, counts_elements = np.unique(np.hstack(ty), return_counts=True)
+    #создаем из этих данных датафрейм для дальнейшей работы
+    ty=DataFrame({'pix':unique_elements, 'count': counts_elements} )
+    #максимальное кол-во итераций, которое мы себе можем позволить ty['count'].max()
+    from pandas import concat
+    for i in range( ty['count'].max(), 0, -1):
+        temp=ty.loc[ty['count']>=i, :]
+ 
+        t=np.array(concat([temp, temp.iloc[[-1],:]] ).pix) - \
+            np.array(concat([temp.iloc[[0],:], temp] ).pix)
+        n=len(t[t>1])
+        # if n==4:
 
-
-
+        if ( (n==4) & (len(imgsarray[0]==1050) ) ) :
+            break
+        if ( (n==3) & (len(imgsarray[0]==1680) ) ) :
+            break
+    if i==1:
+        print('Not enought')
+        
+        
+    return (ty.loc[ty['count']>=i, 'pix'].values)
 
 
 

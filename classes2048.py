@@ -1,9 +1,9 @@
 import numpy as np
-from sklearn.linear_model import SGDClassifier
+#from sklearn.linear_model import SGDClassifier
 from joblib import dump, load
 from time import sleep
 from pandas import DataFrame
-from functions import scrn, getscore, getld, getflist, getfit
+from functions import scrn, getscore, getld, getflist, getfit, getGamePixels
 import os
 import mss
 import mss.tools
@@ -61,11 +61,12 @@ class state():
             self.now=self.stateSgd.predict(sc.reshape(1,-1))[0]
             return(self.now)
             
-    def getprops(self):
+    def getprops(self, save=False):
         import random
         from pynput.keyboard import Listener, Key
         keys= [Key.right,Key.down,Key.up,Key.left,]
-        global tempy
+        global tempy, tempx
+        tempx=np.array([])
         tempy=np.array([])
         def on_release(key):
             if key == Key.esc:
@@ -74,6 +75,7 @@ class state():
     
         def on_press(key):
             global tempy
+            global tempx
             from functions import mv
             if key == Key.enter:
                 mv(random.choice(keys))
@@ -82,47 +84,39 @@ class state():
                     temp = sct.grab(sct.monitors[0])
                     temp=Image.frombytes("RGB", temp.size, \
                     temp.bgra, "raw", "BGRX").convert('L')
-                    temp1=np.array(temp)
-                    temp1=list(map(sum,temp1))
-                    temp=temp.rotate(90)
-                    temp2=np.array(temp)
+                    temp=np.array(temp)
+                    temp2=np.array(Image.fromarray( temp.flatten().reshape(-1,1050, order='F') ) )
                     temp2=list(map(sum,temp2))
-                    
+                    temp=list(map(sum,temp))
+
                     if len(tempy)==0:
                         tempy=np.array([temp])
+                        tempx=np.array([temp2])
                     else:
                         tempy=np.append(tempy,[temp], axis=0)
+                        tempx=np.append(tempx,[temp2], axis=0)
+
                     
                 return (True)
         with Listener(
             on_press=on_press,
             on_release=on_release) as listener:
                 listener.join()
-        tp=[]
-        for i in range(len(tempy)-1):
-            tp.append(np.nonzero(tempy[i+1]-tempy[i])[0])
-        unique_elements, counts_elements = np.unique(np.hstack(tp), return_counts=True)
-        w=DataFrame({'pix':unique_elements, 'count': counts_elements} )
-        maxn=w['count'].max()
-        from pandas import concat
-        while maxn!=0:
-            temp=w.loc[w['count']>=maxn, :]
-            t=np.array(concat([temp, temp.iloc[[-1],:]] ).pix) - \
-                np.array(concat([temp.iloc[[0],:], temp] ).pix)
-            n=len(t[t>1])
-            if n==4:
-                break
-            maxn=maxn-1
-            
-        q=w.loc[w['count']>=maxn, 'pix'].values
-        n=0
+        qy=getGamePixels(tempy)
+        qx=getGamePixels(tempx)
+        
         props={}
         top={}
+        left={}
+        n=0
+        left['l'+str(n)]={}
+        left['l'+str(n)]['starts']=qx[0]
+
         top['l'+str(n)]={}
-        top['l'+str(n)]['starts']=q[0]
-        q[0]
-        prev=q[0]
-        for i in q[1:]:
+        top['l'+str(n)]['starts']=qy[0]
+        prev=qy[0]
+        
+        for i in qy[1:]:
             if i!=prev+1:
                 top['l'+str(n)]['ends']=prev
                 n=n+1
@@ -132,10 +126,22 @@ class state():
         top['l'+str(n)]['ends']=i
         props['top']=top
         
-        shelf = shelve.open("./.conf/props.txt", flag="c")
-        shelf['key1']=props
-        shelf.close()
-        
+        n=0
+        prev=qx[0]
+        for i in qx[1:]:
+            if i!=prev+1:
+                left['l'+str(n)]['ends']=prev
+                n=n+1
+                left['l'+str(n)]={}
+                left['l'+str(n)]['starts']=i
+            prev=i
+        left['l'+str(n)]['ends']=i
+        props['left']=left
+
+        if save:
+            shelf = shelve.open("./.conf/props.txt", flag="w")
+            shelf['key1']=props
+            shelf.close()
         self.props=props
         
         
@@ -167,20 +173,26 @@ class tbl(state):
             self.prev=self.tbl
         self.tbl=DataFrame(columns=np.arange(4), index=np.arange(4))
         sleep(ts)
-        l1,l2 =107, 15
-        top, left=337, 581
+#        l1,l2 =107, 15
+#        top, left=337, 581
         with mss.mss() as sct:
             for i in range(4):
                 for j in range(4):
-                    monitor = {"top": top+l2+i*(l1+l2), "left": left+l2+j*(l1+l2), \
-                   "width": l1, "height": l1}
+                    monitor = {"top": self.props['top']['l'+str(i+1)]['starts'], 
+                                "left": self.props['left']['l'+str(j)]['starts'], 
+                                "width": self.props['left']['l'+str(j)]['ends'] - self.props['left']['l'+str(j)]['starts'] ,
+                                "height": self.props['top']['l'+str(i+1)]['ends'] - self.props['top']['l'+str(i+1)]['starts']}
+                    
+                   #  monitor = {"top": top+l2+i*(l1+l2), "left": left+l2+j*(l1+l2), \
+                   # "width": l1, "height": l1}
+                   
                     
                     sct_img=sct.grab(monitor)
                     if save:
                         img = folder+str(i)+'*'+str(j)+str(datetime.now())+".png".format(**monitor)
                         mss.tools.to_png(sct_img.rgb, sct_img.size, output=img)
-                    
                     n=Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX").convert('L')
+                    n=n.resize( (107,107) )
                     n=np.array(n)
                     n=self.sgd.predict(n.reshape(1,-1) )[0]
                     if n=='np.nan':

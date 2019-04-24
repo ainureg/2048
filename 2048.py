@@ -53,7 +53,7 @@ if __name__ == "__main__":
     os.chdir('/home/ainur/git/2048/')
 
 #    globvar=True
-    global game
+    global t
 
     game=state()
     t=tbl(game)
