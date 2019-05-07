@@ -81,7 +81,7 @@ class state():
         #some notes of using this
         import random
         from pynput.keyboard import Listener, Key
-        keys= [Key.right,Key.down,Key.up,Key.left,]
+        keys= [Key.right,Key.down,Key.up,Key.left]
         global tempy, tempx
         tempx=np.array([])
         tempy=np.array([])
@@ -182,6 +182,13 @@ class tbl(state):
         
     def predict(self, x):
         self.sgd.predict(x)
+    
+    def tablestate(self, log=True, sub=1):
+        if log:
+            return np.reshape(np.array( list( map(np.log2,self.tbl.replace(np.nan, sub).values.flatten()) ) ), [1, 16])
+        else:
+            return np.reshape(self.tbl.replace(np.nan, sub).values.flatten(),[1, 16])
+            
           
     def gettbl(self,ts=0.05, save=False, folder='./'):
 #        firsttime=True
